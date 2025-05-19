@@ -1,0 +1,42 @@
+version: '3'
+services:
+  # 공통 인증/유저 DB
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+
+  # 이벤트 전용 DB
+  mongo-event:
+    image: mongo:6
+    container_name: mongo-event
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./mongo-event-data:/data/db
+
+  gateway:
+    build: ./gateway-server
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth
+      - event
+      - mongo
+
+  auth:
+    build: ./auth-server
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongo
+
+  event:
+    build: ./event-server
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo-event 
