@@ -17,46 +17,49 @@ export class RewardRequestService {
   ) {}
 
   async create(input: RewardRequestCreateInput): Promise<RewardRequest> {
-    // // 중복 신청 방지
+    // 중복 신청 방지 로직
     const existing = await this.rewardRequestRepository.findAllByUserId(input.userId);
     const isDuplicate = existing.some(
-      req => req.eventId === input.eventId && req.rewardId === input.rewardId
+        req => req.eventId === input.eventId && req.rewardId === input.rewardId
     );
     if (isDuplicate) {
-      throw new ConflictException('이미 해당 이벤트/보상에 신청한 이력이 있습니다.');
+        throw new ConflictException('이미 해당 이벤트/보상에 신청한 이력이 있습니다.');
     }
 
     const event = await this.eventRepository.findById(input.eventId);
     if (!event) throw new NotFoundException('이벤트가 존재하지 않습니다.');
-    
-    // // 유저의 이벤트 진행상황 조회
+    // 유저의 이벤트 진행상황 조회
     const progress = await this.userEventProgressRepository.findByUserIdAndEventId({
       userId: input.userId,
       eventId: input.eventId,
     });
-    
     if (!progress) {
       throw new NotFoundException('유저의 이벤트 진행상황이 존재하지 않습니다.');
     }
-
-    // // 이벤트 조건 검증
+    // 이벤트 조건 검증
     const { status, reason } = this.conditionValidatorService.validate({
       eventType: event.type,
       condition: event.condition,
       progress,
     });
-
-    // 정상 생성
-    const request = await this.rewardRequestRepository.save({
-      userId: input.userId,
-      eventId: input.eventId,
-      rewardId: input.rewardId,
-      status,
-      requestedAt: new Date(),
-      processedAt: input.processedAt,
-      reason,
-    });
-    return request;
+    // 정상 생성 (동시성 이슈로 인한 중복은 DB Unique 인덱스에 의해 막힘)
+    try {
+      const request = await this.rewardRequestRepository.save({
+        userId: input.userId,
+        eventId: input.eventId,
+        rewardId: input.rewardId,
+        status,
+        requestedAt: new Date(),
+        processedAt: input.processedAt,
+        reason,
+      });
+      return request;
+    } catch (e: any) {
+      if (e.code === 11000) {
+        throw new ConflictException('이미 해당 이벤트/보상에 신청한 이력이 있습니다.');
+      }
+      throw e;
+    }
   }
 
   async getByUserId(userId: string): Promise<RewardRequest[]> {
