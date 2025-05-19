@@ -40,7 +40,7 @@ export class RewardRequestService {
     }
 
     // // 이벤트 조건 검증
-    const requestStatus = this.conditionValidatorService.validate({
+    const { status, reason } = this.conditionValidatorService.validate({
       eventType: event.type,
       condition: event.condition,
       progress,
@@ -51,9 +51,10 @@ export class RewardRequestService {
       userId: input.userId,
       eventId: input.eventId,
       rewardId: input.rewardId,
-      status: requestStatus,
+      status,
       requestedAt: new Date(),
       processedAt: input.processedAt,
+      reason,
     });
     return request;
   }

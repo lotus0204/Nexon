@@ -33,7 +33,6 @@ export class UsersController {
   })
   @Post('register')
   async register(@Body() createUserDto: CreateUserDto): Promise<UserResponse> {
-    console.log('register', createUserDto);
     const user = await this.usersService.register(new UserCreateInput(createUserDto));
     return new UserResponse(user);
   }

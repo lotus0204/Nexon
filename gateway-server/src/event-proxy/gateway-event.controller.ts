@@ -12,7 +12,6 @@ export class GatewayEventController {
   @Roles('OPERATOR', 'ADMIN')
   @Post()
   async proxyCreateEvent(@Req() req: Request, @Res() res: Response) {
-    console.log('debugCreate', req.method, req.path);
     try {
       const {host, 'content-length': _, ...headersWithoutHostAndLength} = req.headers;
       const eventServerUrl = process.env.EVENT_SERVER_URL || 'http://event:3002';

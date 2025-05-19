@@ -16,10 +16,66 @@ export class EventController {
 
   @ApiOperation({ summary: '이벤트 생성' })
   @ApiResponse({ status: 201, description: '이벤트 생성 성공', type: EventResponseDto })
-  @ApiBody({ type: CreateEventDto })
+  @ApiBody({
+    type: CreateEventDto,
+    examples: {
+      newUser: {
+        summary: '신규유저 이벤트',
+        value: {
+          name: '신규유저 이벤트',
+          description: '가입 후 7일 이내 유저 대상 이벤트',
+          startAt: '2024-07-01T00:00:00.000Z',
+          endAt: '2024-07-31T23:59:59.999Z',
+          type: 'NEW_USER',
+          condition: { newUserWithinDays: 7 },
+          status: 'ENABLED'
+        }
+      },
+      attendance: {
+        summary: '출석 이벤트',
+        value: {
+          name: '출석 이벤트',
+          description: '7일 연속 출석 시 보상 지급',
+          startAt: '2024-07-01T00:00:00.000Z',
+          endAt: '2024-07-31T23:59:59.999Z',
+          type: 'ATTENDANCE',
+          condition: { requiredDays: 7 },
+          status: 'ENABLED'
+        }
+      },
+      friendInvite: {
+        summary: '친구초대 이벤트',
+        value: {
+          name: '친구초대 이벤트',
+          description: '3명 이상 초대 시 보상',
+          startAt: '2024-07-01T00:00:00.000Z',
+          endAt: '2024-07-31T23:59:59.999Z',
+          type: 'FRIEND_INVITE',
+          condition: { minInvites: 3 },
+          status: 'ENABLED'
+        }
+      },
+      specialDate: {
+        summary: '특별한 날 이벤트',
+        value: {
+          name: '크리스마스 이벤트',
+          description: '크리스마스 기간 한정 이벤트',
+          startAt: '2024-12-20T00:00:00.000Z',
+          endAt: '2024-12-26T23:59:59.999Z',
+          type: 'SPECIAL_DATE',
+          condition: {
+            specialDateRange: {
+              from: '2024-12-24T00:00:00.000Z',
+              to: '2024-12-25T23:59:59.999Z'
+            }
+          },
+          status: 'ENABLED'
+        }
+      }
+    }
+  })
   @Post()
   async create(@Body() dto: CreateEventDto): Promise<EventResponseDto> {
-    console.log('create', dto);
     const input = new EventCreateInput({
       name: dto.name,
       description: dto.description,
@@ -65,7 +121,64 @@ export class EventController {
   @ApiOperation({ summary: '이벤트 수정' })
   @ApiResponse({ status: 200, description: '이벤트 수정 성공', type: EventResponseDto })
   @ApiParam({ name: 'id', description: '이벤트 ID' })
-  @ApiBody({ type: UpdateEventDto })
+  @ApiBody({
+    type: UpdateEventDto,
+    examples: {
+      newUser: {
+        summary: '신규유저 이벤트 수정',
+        value: {
+          name: '신규유저 이벤트(수정)',
+          description: '가입 후 10일 이내 유저 대상 이벤트',
+          startAt: '2024-07-05T00:00:00.000Z',
+          endAt: '2024-08-01T23:59:59.999Z',
+          type: 'NEW_USER',
+          condition: { newUserWithinDays: 10 },
+          status: 'ENABLED'
+        }
+      },
+      attendance: {
+        summary: '출석 이벤트 수정',
+        value: {
+          name: '출석 이벤트(수정)',
+          description: '10일 연속 출석 시 보상 지급',
+          startAt: '2024-07-10T00:00:00.000Z',
+          endAt: '2024-08-10T23:59:59.999Z',
+          type: 'ATTENDANCE',
+          condition: { requiredDays: 10 },
+          status: 'ENABLED'
+        }
+      },
+      friendInvite: {
+        summary: '친구초대 이벤트 수정',
+        value: {
+          name: '친구초대 이벤트(수정)',
+          description: '5명 이상 초대 시 보상',
+          startAt: '2024-07-10T00:00:00.000Z',
+          endAt: '2024-08-10T23:59:59.999Z',
+          type: 'FRIEND_INVITE',
+          condition: { minInvites: 5 },
+          status: 'ENABLED'
+        }
+      },
+      specialDate: {
+        summary: '특별한 날 이벤트 수정',
+        value: {
+          name: '연말 이벤트',
+          description: '연말 기간 한정 이벤트',
+          startAt: '2024-12-28T00:00:00.000Z',
+          endAt: '2025-01-02T23:59:59.999Z',
+          type: 'SPECIAL_DATE',
+          condition: {
+            specialDateRange: {
+              from: '2024-12-31T00:00:00.000Z',
+              to: '2025-01-01T23:59:59.999Z'
+            }
+          },
+          status: 'ENABLED'
+        }
+      }
+    }
+  })
   @Patch(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateEventDto): Promise<EventResponseDto> {
     const input = new EventUpdateInput({
